@@ -1,22 +1,33 @@
 SUMMARY = "Imagem Oficial da Bomba de Infusão"
 LICENSE = "MIT"
 
-# Baseia na core-image-minimal (ou core-image-base para ter mais recursos)
+# Baseia na core-image-minimal (mas turbinada)
 require recipes-core/images/core-image-minimal.bb
 
-# Lista de pacotes que SEMPRE devem estar nesta imagem
+# --- PACOTES DO SISTEMA ---
 IMAGE_INSTALL:append = " \
     linux-firmware-rpidistro-bcm43436 \
     linux-firmware-rpidistro-bcm43430 \
     kernel-module-brcmfmac \
     wpa-supplicant \
     iw \
+    wireless-regdb \
+    htop \
+    nano \
+    i2c-tools \
+"
+
+# --- PACOTES PYTHON E APLICAÇÃO ---
+# python3-modules traz a biblioteca padrão completa (json, threading, etc)
+IMAGE_INSTALL:append = " \
     python3 \
     python3-pip \
+    python3-modules \
+    python3-smbus \
+    python3-flask \
+    python3-paho-mqtt \
     rpi-gpio \
     mosquitto \
     mosquitto-clients \
-    python3-paho-mqtt \
     infusion-control \
 "
-

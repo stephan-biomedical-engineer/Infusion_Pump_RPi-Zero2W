@@ -1,9 +1,12 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI:append = " file://mosquitto.conf"
+SRC_URI += "file://mosquitto.conf"
 
-# Sobrescreve o arquivo de configuração padrão pelo nosso
 do_install:append() {
     install -d ${D}${sysconfdir}/mosquitto
     install -m 0644 ${WORKDIR}/mosquitto.conf ${D}${sysconfdir}/mosquitto/mosquitto.conf
+    install -d ${D}/var/lib/mosquitto
 }
+
+# Adiciona a pasta criada à lista de arquivos do pacote principal
+FILES:${PN} += "/var/lib/mosquitto"
