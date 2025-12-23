@@ -1,0 +1,15 @@
+# Ignorar artefatos de build massivos
+build/tmp/
+build/downloads/
+build/sstate-cache/
+build/cache/
+build/bitbake-cookerdaemon.log
+
+# Ignorar arquivos temporários do Python e Editor
+__pycache__/
+*.pyc
+.vscode/
+*.swp
+
+# (Opcional) Se quiser ignorar as pastas de terceiros caso não use submodules
+# Mas vamos usar submodules, então não precisa ignorar aqui, o git gerencia.
