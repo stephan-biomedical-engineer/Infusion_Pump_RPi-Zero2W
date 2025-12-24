@@ -1,0 +1,21 @@
+[Unit]
+Description=Servico de Controle da Bomba de Infusao
+# Só inicia APÓS a rede e o Mosquitto estarem prontos
+After=network.target mosquitto.service
+Requires=mosquitto.service
+
+[Service]
+Type=simple
+Environment=PYTHONUNBUFFERED=1
+# O comando exato para rodar seu script
+ExecStart=/usr/bin/python3 /usr/bin/infusion-pump-app
+# Reinicia automaticamente se o Python travar (CRUCIAL para 'Servidor')
+Restart=always
+RestartSec=5
+# Roda como root para ter acesso ao GPIO
+User=root
+Group=root
+
+[Install]
+# Define que deve iniciar no boot multi-usuário (padrão)
+WantedBy=multi-user.target
