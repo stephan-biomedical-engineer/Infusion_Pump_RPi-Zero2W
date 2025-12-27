@@ -15,6 +15,10 @@ do_install:append() {
     
     # Instala o arquivo. O prefixo '00-' ou '50-' ajuda na ordem, 
     install -m 0644 ${WORKDIR}/watchdog.conf ${D}${sysconfdir}/systemd/system.conf.d/50-watchdog.conf
+
+    # Cria o diretório para o timesyncd 
+    # Yocto geralmente mapeia como temporária ou volátil para evitar erros de RO
+    install -d ${D}${localstatedir}/lib/systemd/timesync
 }
 
 # Avisa o bitbake que instalamos arquivos nesses locais
