@@ -59,39 +59,26 @@ private:
     void setup_mqtt() {
         mqtt_client_.brokers(BROKER_ADDR, BROKER_PORT);
 
-        // 1. Definimos o que acontece quando uma MENSAGEM chega (Publish Receive)
-        mqtt_client_.async_receive([this](
-            boost::mqtt5::error_code ec, 
-            std::string topic, 
-            std::string payload, 
-            boost::mqtt5::publish_props props
-        ) {
-            if (!ec) {
-                process_message(payload);
-                // IMPORTANTE: Precisamos chamar receive novamente para a próxima mensagem
-                setup_receive_loop();
-            }
-        });
+        // Iniciamos o loop de recepção ANTES do async_run
+        setup_receive_loop();
 
+        // Inicia o cliente
         mqtt_client_.async_run(boost::asio::detached);
 
-        // 2. Configuramos a INSCRIÇÃO no tópico
-        // Usamos strings literais para evitar problemas de conversão implícita
+        // Inscreve no tópico
+        boost::mqtt5::subscribe_topic sub_topic{TOPIC_NAME, {boost::mqtt5::qos_e::at_least_once}};
         mqtt_client_.async_subscribe(
-            boost::mqtt5::subscribe_topic{TOPIC_NAME, {boost::mqtt5::qos_e::at_least_once}},
+            sub_topic,
             boost::mqtt5::subscribe_props{},
             [](boost::mqtt5::error_code ec, std::vector<boost::mqtt5::reason_code> rc, boost::mqtt5::suback_props props) {
-                if (!ec) {
-                    std::cout << "Inscrito no tópico com sucesso." << std::endl;
-                } else {
-                    std::cerr << "Erro no subscribe: " << ec.message() << std::endl;
-                }
+                if (!ec) std::cout << "Inscrito e pronto para comandos." << std::endl;
             }
         );
     }
 
     // Loop recursivo para continuar recebendo mensagens
     void setup_receive_loop() {
+        // Usamos o operador -> para garantir que estamos acessando o cliente corretamente
         mqtt_client_.async_receive([this](
             boost::mqtt5::error_code ec, 
             std::string topic, 
@@ -100,7 +87,14 @@ private:
         ) {
             if (!ec) {
                 process_message(payload);
-                setup_receive_loop();
+                setup_receive_loop(); // Realimenta o loop imediatamente
+            } else {
+                // Se houver erro (ex: desconexão), tentamos religar o loop após 1 segundo
+                std::cerr << "Erro no receive: " << ec.message() << ". Tentando reconectar loop..." << std::endl;
+                auto timer = std::make_shared<boost::asio::steady_timer>(io_, boost::asio::chrono::seconds(1));
+                timer->async_wait([this, timer](const boost::system::error_code&) {
+                    setup_receive_loop();
+                });
             }
         });
     }
